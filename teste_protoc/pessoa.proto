@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package pessoa;
+
+// Define uma mensagem Pessoa com idade, nome e altura
+message Pessoa {
+  string nome = 1;
+  int32 idade = 2;
+  float altura = 3;
+}

@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package mflix;
+
 
 message Filme {
   int32 id = 1;                  // Identificador único do filme
