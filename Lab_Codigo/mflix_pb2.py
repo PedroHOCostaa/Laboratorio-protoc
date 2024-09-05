@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0bmflix.proto\x12\x05mflix\"r\n\x05\x46ilme\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0e\n\x06titulo\x18\x02 \x01(\t\x12\x0f\n\x07\x64iretor\x18\x03 \x01(\t\x12\x0b\n\x03\x61no\x18\x04 \x01(\x05\x12\x0e\n\x06\x61tores\x18\x05 \x03(\t\x12\x0e\n\x06genero\x18\x06 \x03(\t\x12\x0f\n\x07\x64uracao\x18\x07 \x01(\x02\"1\n\x06Pedido\x12\n\n\x02op\x18\x01 \x01(\x05\x12\x1b\n\x05\x66ilme\x18\x02 \x01(\x0b\x32\x0c.mflix.Filme\"=\n\x0b\x43onfirmacao\x12\x11\n\tresultado\x18\x01 \x01(\x05\x12\x1b\n\x05\x66ilme\x18\x02 \x01(\x0b\x32\x0c.mflix.Filmeb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0bmflix.proto\x12\x05mflix\"s\n\x05\x46ilme\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0e\n\x06titulo\x18\x02 \x01(\t\x12\x0f\n\x07\x64iretor\x18\x03 \x01(\t\x12\x0b\n\x03\x61no\x18\x04 \x01(\x05\x12\x0e\n\x06\x61tores\x18\x05 \x03(\t\x12\x0f\n\x07generos\x18\x06 \x03(\t\x12\x0f\n\x07\x64uracao\x18\x07 \x01(\x02\"?\n\x06Pedido\x12\n\n\x02op\x18\x01 \x01(\x05\x12\x1b\n\x05\x66ilme\x18\x02 \x01(\x0b\x32\x0c.mflix.Filme\x12\x0c\n\x04\x66unc\x18\x03 \x01(\x05\"=\n\x0b\x43onfirmacao\x12\x11\n\tresultado\x18\x01 \x01(\x05\x12\x1b\n\x05\x66ilme\x18\x02 \x01(\x0b\x32\x0c.mflix.Filmeb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,9 +32,9 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'mflix_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_FILME']._serialized_start=22
-  _globals['_FILME']._serialized_end=136
-  _globals['_PEDIDO']._serialized_start=138
-  _globals['_PEDIDO']._serialized_end=187
-  _globals['_CONFIRMACAO']._serialized_start=189
-  _globals['_CONFIRMACAO']._serialized_end=250
+  _globals['_FILME']._serialized_end=137
+  _globals['_PEDIDO']._serialized_start=139
+  _globals['_PEDIDO']._serialized_end=202
+  _globals['_CONFIRMACAO']._serialized_start=204
+  _globals['_CONFIRMACAO']._serialized_end=265
 # @@protoc_insertion_point(module_scope)

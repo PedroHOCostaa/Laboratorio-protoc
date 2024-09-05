@@ -9,13 +9,14 @@ message Filme {
   string diretor = 3;            // Nome do diretor
   int32 ano = 4;                 // Ano de lançamento
   repeated string atores = 5;    // Lista de atores
-  repeated string genero = 6;    // Gênero do filme
+  repeated string generos = 6;    // Gênero do filme
   float duracao = 7;             // Duração do filme em minutos
 }
 
 message Pedido {
   int32 op = 1;
   Filme filme = 2;
+  int32 func = 3;
 }
 
 message Confirmacao {

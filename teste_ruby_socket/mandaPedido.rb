@@ -102,3 +102,5 @@ loop do
     puts "Erro ao processar a solicitação, retorno #{confirmacao.resultado}."
   end
 end
+
+socket.close
