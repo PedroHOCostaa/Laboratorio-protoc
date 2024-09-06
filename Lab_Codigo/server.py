@@ -5,17 +5,40 @@ import sys
 HOST = '127.0.0.1'
 PORT =  65432
 
-class Banco:
-    def create(self, Filme):
+# ####!!!!!!!!!!!!!!!!!!!! AQUI SERÁ SUBSTITUIDO PELO BANCO DE DADOS MONGODB !!!!!!!!!!!!!!!!!!!#### Revizar todas as funções, pois elas devem
+# ser adaptadas, a implementação foi  feita para testar a comunicação, qualquer coisa me mande mengagem (y) ####
+class Banco:             
+    def create(self, Filme): 
+
+        # ========================================================================================================================= #
+        # Recebe um objeto filme para salvar no banco e retorna True se for salvo com sucesso, e retorna False se houver algum      #
+        # erro na ação. O objeto filme possui os atributos: id, titulo, diretores, ano, generos, atores e duracao. O atributo       #
+        # id é uma string, para ser utilizado na base de dados como um oid. Os atributos diretores, generos e atores são listas     #
+        # de strings. Os atributos ano e duracao são inteiros, e o atributo titulo é uma string. Nenhum dos atributos é opcional,   #
+        # ou seja, qualquer objeto recebido pela função sempre possuirá todos os atributos preenchidos.                             #
+        # ========================================================================================================================= #
+        
         print("Criando o Filme", Filme.titulo)
-        if Filme.titulo is None:
+        # Aqui seria a parte de salvar no banco de dados
+        if Filme.titulo is None:                
             return False
         else:
             return True
         
     def read(self, filme):
+
+
+        # ========================================================================================================================= #
+        # Recebe um objeto filme com um id para fazer a leitura, retorna None se algum erro aconteceu, e retorna um objeto Filme.   #
+        # O objeto filme deve possuir os atributos: id, titulo, diretores, ano, generos, atores e duracao. O atributo id é uma      #
+        # string, para ser utilizado na base de dados como um oid. Os atributos diretores, generos e atores são listas de strings.  #
+        # Os atributos ano e duracao são inteiros, e o atributo titulo é uma string. Nenhum dos atributos é opcional, ou seja,      #
+        # qualquer objeto retornado pela função sempre possuirá todos os atributos preenchidos. A leitura deve é feita usando o id  #
+        # ========================================================================================================================= #
+
+
         print("Lendo o filme", filme.id)
-        filme_lido = mflix_pb2.Filme()
+        filme_lido = mflix_pb2.Filme()          
         filme_lido.CopyFrom(filme)                  ### está parte será susbtituida pela leitura no banco e dai salva os bagui lido no filme_lido
         if filme_lido is None:
             return None
@@ -23,6 +46,17 @@ class Banco:
             return filme_lido
         
     def update(self, Filme):
+
+
+        # ========================================================================================================================= #
+        #  Recebe um objeto filme para atualizar no banco, e retorna True se foi atualizado com sucesso e retorna False se houve    #
+        #  algum erro na ação. O objeto filme possui os atributos: id, titulo, diretores, ano, generos, atores e duracao. O         #
+        #  atributo id é uma string, para ser utilizado na base de dados para buscar o dado que será atualizado, os atributos       #
+        #  diretores, generos e atores são listas de strings. Os atributos ano e duracao são inteiros, e o atributo titulo é uma    #
+        #  string. Nenhum dos atributos são opcionais, ou seja, qualquer objeto recebido pela função deve possuir todos os          #
+        #  atributos preenchidos                                                                                                    #
+        # ========================================================================================================================= #
+
         print("Atualizando o nome do Filme", Filme.id, "Para", Filme.titulo)
         if Filme.titulo is None:
             return False
@@ -30,6 +64,15 @@ class Banco:
             return True
         
     def delete(self, Filme):
+
+
+        # ========================================================================================================================= #
+        # Recebe um objeto filme com um id para fazer a remoção do banco de dados, retorna False se algum erro aconteceu,           #
+        # retorna True se o filme foi removido com sucesso. O objeto filme deve possuir o atributo id, o atributo id é uma string,  #
+        # para ser utilizado na base de dados como um oid.                                                                          #
+        # ========================================================================================================================= #
+
+
         print("Deletando Filme" , Filme.id, Filme.titulo)
         if Filme.id is None:
             return False
