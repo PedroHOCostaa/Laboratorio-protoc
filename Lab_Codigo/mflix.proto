@@ -4,13 +4,13 @@ package mflix;
 
 
 message Filme {
-  int32 id = 1;                  // Identificador único do filme
+  string id = 1;                 // Identificador único do filme
   string titulo = 2;             // Título do filme
-  string diretor = 3;            // Nome do diretor
+  repeated string diretores = 3; // Nome do diretor
   int32 ano = 4;                 // Ano de lançamento
   repeated string atores = 5;    // Lista de atores
-  repeated string generos = 6;    // Gênero do filme
-  float duracao = 7;             // Duração do filme em minutos
+  repeated string generos = 6;   // Gênero do filme
+  int32 duracao = 7;             // Duração do filme em segundos 
 }
 
 message Pedido {
@@ -22,4 +22,5 @@ message Pedido {
 message Confirmacao {
   int32 resultado = 1;
   Filme filme = 2;
+  int32 erro = 3;
 }

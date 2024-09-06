@@ -8,15 +8,34 @@ PORT =  65433
 class Banco:
     def create(self, Filme):
         print("Criando o Filme", Filme.titulo)
-        return Filme.titulo
+        if Filme.titulo is None:
+            return False
+        else:
+            return True
+        
     def read(self, Filme):
         print("Lendo o filme", Filme.id)
-        return Filme
+        filme_lido = mflix_pb2.filme()
+        filme_lido.CopyFrom(Filme)                  ### está parte será susbtituida pela leitura no banco e dai salva os bagui lido no filme_lido
+        if filme_lido is None:
+            return None
+        else:
+            return filme_lido
+        
     def update(self, Filme):
         print("Atualizando o nome do Filme", Filme.id, "Para", Filme.titulo)
+        if Filme.titulo is None:
+            return False
+        else:
+            return True
+        
     def delete(self, Filme):
         print("Deletando Filme" , Filme.id, Filme.titulo)
-
+        if Filme.id is None:
+            return False
+        else:
+            return True
+        
 banco_de_dados = Banco()
 
 def envia_filme(s ,filme):
@@ -53,29 +72,107 @@ def handle_client(conn, addr):
         pedido = receber_pedido(conn)
             
         confirmacao = mflix_pb2.Confirmacao()
-
+        
         if pedido.op == 1:  # CREATE
-            confirmacao.filme.titulo = banco_de_dados.create(pedido.filme)
-            confirmacao.resultado = 1
-            envia_confirmacao(conn, confirmacao)
+
+            if not pedido.filme.id:
+                confirmacao.erro = 1  # Campo ID vazio
+                confirmacao.resultado = 0
+            elif not pedido.filme.titulo:
+                confirmacao.erro = 2  # Campo Título vazio
+                confirmacao.resultado = 0
+            elif not pedido.filme.diretor:
+                confirmacao.erro = 3  # Campo Diretor vazio
+                confirmacao.resultado = 0
+            elif not pedido.filme.ano:
+                confirmacao.erro = 4  # Campo Ano vazio
+                confirmacao.resultado = 0
+            elif not pedido.filme.generos:
+                confirmacao.erro = 5  # Campo Gêneros vazio
+                confirmacao.resultado = 0
+            elif not pedido.filme.atores:
+                confirmacao.erro = 6  # Campo Atores vazio
+                confirmacao.resultado = 0
+            elif not pedido.filme.duracao:
+                confirmacao.erro = 7  # Campo Duração vazio
+                confirmacao.resultado = 0
+
+            else:
+                resultado = banco_de_dados.create(pedido.filme)
+                if resultado == False:
+                    confirmacao.resultado = 0
+                    confirmacao.erro = 8  # Erro ao criar o filme
+                else:
+                    confirmacao.resultado = 1
+            
+
         elif pedido.op == 2:  # READ
-            filme_lido = banco_de_dados.read(pedido.filme)
-            if filme_lido.id == -1:
+
+            if not pedido.filme.id:
+                confirmacao.erro = 1  # Campo ID vazio
                 confirmacao.resultado = 0
             else:
-                confirmacao.filme.CopyFrom(filme_lido)
-                confirmacao.resultado = 1
-            envia_confirmacao(conn, confirmacao)
-            envia_filme(conn, filme_lido)
+                filme_lido = banco_de_dados.read()
+                if filme_lido is None:
+                    confirmacao.resultado = 0
+                    confirmacao.erro = 9  # Erro ao ler o filme 
+                else:   
+                    confirmacao.filme.CopyFrom(filme_lido)
+                    confirmacao.resultado = 2
+
+    
         elif pedido.op == 3:  # UPDATE
-            banco_de_dados.update(pedido.filme)
+            if not pedido.filme.id:
+                confirmacao.erro = 1  # Campo ID vazio
+                confirmacao.resultado = 0
+            elif not pedido.filme.titulo:
+                confirmacao.erro = 2  # Campo Título vazio
+                confirmacao.resultado = 0
+            elif not pedido.filme.diretor:
+                confirmacao.erro = 3  # Campo Diretor vazio
+                confirmacao.resultado = 0
+            elif not pedido.filme.ano:
+                confirmacao.erro = 4  # Campo Ano vazio
+                confirmacao.resultado = 0
+            elif not pedido.filme.generos:
+                confirmacao.erro = 5  # Campo Gêneros vazio
+                confirmacao.resultado = 0
+            elif not pedido.filme.atores:
+                confirmacao.erro = 6  # Campo Atores vazio
+                confirmacao.resultado = 0
+            elif not pedido.filme.duracao:
+                confirmacao.erro = 7  # Campo Duração vazio
+                confirmacao.resultado = 0
+
+            else:
+                resultado = banco_de_dados.update(pedido.filme)
+                if resultado == False:
+                    confirmacao.resultado = 0
+                    confirmacao.erro = 10  # Erro ao atualizar o filme
+                else:
+                    confirmacao.resultado = 3
+            
+
         elif pedido.op == 4:  # DELETE
-            banco_de_dados.delete(pedido.filme)
+
+            if not pedido.filme.id:
+                confirmacao.erro = 1  # Campo ID vazio
+                confirmacao.resultado = 0
+            else:
+                resultado = banco_de_dados.delete(pedido.filme)
+                if resultado == False:
+                    confirmacao.resultado = 0
+                    confirmacao.erro = 11  # Erro ao deletar o filme
+                else:
+                    confirmacao.resultado = 4
+
+  
         elif pedido.op == 5: #DESCONECT
-            conn.send(b'ACK')
+            confirmacao.resultado = 5
             connection = 0
-        else:
-            print("Pedido inválido")
+
+
+        envia_confirmacao(conn, confirmacao)
 
 
 

@@ -10,16 +10,16 @@ require_relative 'mflix_pb'
 # A comunicação realizada por sockets tcp ocorre da seguinte forma: 
 
 
-    # Cliente envia para o servidor
-# ============================================================= #
-# tamanho da string serializada do pedido em bytes (4 bytes)    #
+    # Cliente envia para o servidor #
+# ========================================================== #
+# tamanho da string serializada do pedido em bytes (4 bytes) #
 # ============================================================= #
 # string do pedido serializado (tamanho enviado anteriormente)  #
 # ============================================================= #
 
-    # Cliente recebe do servidor
-# ================================================================= #
-# tamanho da string serializada da confirmação em bytes (4 bytes)   #
+    # Cliente recebe do servidor #
+# =============================================================== #
+# tamanho da string serializada da confirmação em bytes (4 bytes) #
 # ================================================================= #
 # string da confirmação serializada (tamanho enviado anteriormente) #
 # ================================================================= #
@@ -36,24 +36,68 @@ loop do
   puts "Digite a opção\n Create - 1\t Read - 2\n Update - 3\t Remove - 4\n Quit - 5: "
   pedido.op = gets.chomp.to_i
   
-  case pedido.op
-  when 1                                          ### Create                    
-    puts "Digite o id do filme: "
-    pedido.filme.id = gets.chomp.to_i
+  
+  # ============================================================= #
+  #               salva os dados em pedido.filme                  #
+  # ============================================================= #
+  
+
+  case pedido.op                                      # ====== #
+  when 1                                              # Create #                  
+    puts "Digite o id do filme que será criado: "     # ====== #
+    pedido.filme.id = gets.chomp
     puts "Digite o titulo do filme: "
     pedido.filme.titulo = gets.chomp
-    puts "Digite o nome do diretor do filme: "
-    pedido.filme.diretor = gets.chomp
+    puts "Quantidade de diretores"
+    qtd_diretores = gets.chomp.to_i
+    qtd_diretores.times do
+      puts "Digite o nome do diretor: "
+      diretor = gets.chomp
+      pedido.filme.diretores.push(diretor)        # Adiciona o nome do diretor no array de diretores do filme
+    end
     puts "Digite o ano de lançamento do filme: "
     pedido.filme.ano = gets.chomp.to_i    
+    puts "Quantidade de atores do filme: "
+      qtd_atores = gets.chomp.to_i
+      qtd_atores.times do
+        puts "Digite o ator do filme: "
+        ator = gets.chomp
+        pedido.filme.atores.push(ator)            # Adiciona o nome do gênero ao array de gêneros do filme
+      end
       
-  when 2                                          ### Read
-    puts "Digite o id do filme: "
-    pedido.filme.id = gets.chomp.to_i
+      puts "Quantidade de generos do filme: "
+      qtd_generos = gets.chomp.to_i
+      qtd_generos.times do
+        puts "Digite o genero do filme: "
+        genero = gets.chomp
+        pedido.filme.generos.push(genero)         # Adiciona o nome do gênero ao array de gêneros do filme
+      end
+      puts "Digite a duração do filme: "
+      pedido.filme.duracao = gets.chomp.to_i
+  
+                                                  # ==== #
+  when 2                                          # Read #
+    puts "Digite o id do filme que será lido: "   # ==== #
+    pedido.filme.id = gets.chomp
 
-  when 3                                          ### Update                  
-    puts "Digite o id do filme: "
-    pedido.filme.id = gets.chomp.to_i
+                                                          # ====== #
+  when 3                                                  # Update #                  
+    puts "Digite o id do filme que será atualizado: "     # ====== #
+    pedido.filme.id = gets.chomp
+    puts "Digite o titulo do filme: "
+    pedido.filme.titulo = gets.chomp
+
+    puts "Quantidade de diretores"
+    qtd_diretores = gets.chomp.to_i
+    qtd_diretores.times do
+      puts "Digite o nome do diretor: "
+      diretor = gets.chomp
+      pedido.filme.diretores.push(diretor)        # Adiciona o nome do diretor no array de diretores do filme
+    end
+
+    puts "Digite o ano de lançamento do filme: "
+    pedido.filme.ano = gets.chomp.to_i    
+
     puts "Quantidade de atores do filme: "
     qtd_atores = gets.chomp.to_i
     qtd_atores.times do
@@ -61,7 +105,7 @@ loop do
       ator = gets.chomp
       pedido.filme.atores.push(ator)  # Adiciona o nome do gênero ao array de gêneros do pedido
     end
-    
+
     puts "Quantidade de generos do filme: "
     qtd_generos = gets.chomp.to_i
     qtd_generos.times do
@@ -69,21 +113,29 @@ loop do
       genero = gets.chomp
       pedido.filme.generos.push(genero)  # Adiciona o nome do gênero ao array de gêneros do pedido
     end
+
     puts "Digite a duração do filme: "
     pedido.filme.duracao = gets.chomp.to_i
 
-  when 4                                          ### Remove      
-    puts "Digite o id do filme: "
-    pedido.filme.id = gets.chomp.to_i
+
+                                                        # ====== #
+  when 4                                                # Remove #    
+    puts "Digite o id do filme a ser deletado: "        # ====== #
+    pedido.filme.id = gets.chomp
   
-  when 5
-    puts "Enviar mensagem para terminar conexão"
+                                                        # ===== #
+  when 5                                                # Close #
+    puts "Enviar mensagem para terminar conexão"        # ===== #
 
   else
     puts "Opção inválida"
     pedido.op = 0
     next
   end
+
+                  # ============================================================= #
+                  #           envia mensagem do cliente para o servidor           #
+                  # ============================================================= #
 
   msg = pedido.to_proto
   socket.write([msg.bytesize].pack('L>'))
@@ -102,20 +154,29 @@ loop do
     puts "Filme criado com sucesso!"
     puts "ID: #{confirmacao.filme.id}"
     puts "Título: #{confirmacao.filme.titulo}"
-    puts "Diretor: #{confirmacao.filme.diretor}"
+    puts "Diretores: #{confirmacao.filme.diretores}"
+    puts "Atores: #{confirmacao.filme.atores}"
+    puts "Gêneros: #{confirmacao.filme.generos}"
+    puts "Duração: #{confirmacao.filme.duracao}"
     puts "Ano: #{confirmacao.filme.ano}"
   when 2
     puts "Filme lido com sucesso!"
     puts "ID: #{confirmacao.filme.id}"
     puts "Título: #{confirmacao.filme.titulo}"
-    puts "Diretor: #{confirmacao.filme.diretor}"
+    puts "Diretores: #{confirmacao.filme.diretores}"
+    puts "Atores: #{confirmacao.filme.atores}"
+    puts "Gêneros: #{confirmacao.filme.generos}"
+    puts "Duração: #{confirmacao.filme.duracao}"
     puts "Ano: #{confirmacao.filme.ano}"
   when 3
     puts "Filme atualizado com sucesso!"
     puts "ID: #{confirmacao.filme.id}"
+    puts "Título: #{confirmacao.filme.titulo}"
+    puts "Diretores: #{confirmacao.filme.diretores}"
     puts "Atores: #{confirmacao.filme.atores}"
     puts "Gêneros: #{confirmacao.filme.generos}"
     puts "Duração: #{confirmacao.filme.duracao}"
+    puts "Ano: #{confirmacao.filme.ano}"
   when 4
     puts "Filme removido com sucesso!"
     puts "ID: #{confirmacao.filme.id}"
@@ -123,7 +184,31 @@ loop do
     puts "Conexão encerrada."
     break
   else
-    puts "Erro ao processar a solicitação, retorno #{confirmacao.resultado}."
+    case confirmacao.erro
+    
+    when 1
+      puts "Campo id vazio"
+    when 2
+      puts "Campo titulo vazio"
+    when 3
+      puts "Campo diretores vazio"
+    when 4
+      puts "Campo ano vazio"
+    when 5
+      puts "Campo atores vazio"
+    when 6
+      puts "Campo generos vazio"
+    when 7
+      puts "Campo duracao vazio"
+    when 8
+      puts "Erro ao criar filme"
+    when 9
+      puts "Erro ao ler filme"
+    when 10
+      puts "Erro ao atualizar filme"
+    when 11
+      puts "Erro ao remover filme"
+    end
   end
 end
 
