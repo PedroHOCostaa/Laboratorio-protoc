@@ -3,7 +3,7 @@ import threading
 import mflix_pb2
 import sys
 HOST = '127.0.0.1'
-PORT =  65433
+PORT =  65432
 
 class Banco:
     def create(self, Filme):
@@ -13,10 +13,10 @@ class Banco:
         else:
             return True
         
-    def read(self, Filme):
-        print("Lendo o filme", Filme.id)
-        filme_lido = mflix_pb2.filme()
-        filme_lido.CopyFrom(Filme)                  ### está parte será susbtituida pela leitura no banco e dai salva os bagui lido no filme_lido
+    def read(self, filme):
+        print("Lendo o filme", filme.id)
+        filme_lido = mflix_pb2.Filme()
+        filme_lido.CopyFrom(filme)                  ### está parte será susbtituida pela leitura no banco e dai salva os bagui lido no filme_lido
         if filme_lido is None:
             return None
         else:
@@ -42,7 +42,7 @@ def envia_filme(s ,filme):
     msg = filme.SerializeToString()
     tamanho_mensagem = len(msg).to_bytes(4, 'big')
     s.send(tamanho_mensagem)
-    print("\nEnviado tamanho_mensagem", tamanho_mensagem)
+#    print("\nEnviado tamanho_mensagem", tamanho_mensagem)
     s.send(msg)
     print("\nEnviado msg", msg)
 
@@ -50,22 +50,24 @@ def envia_confirmacao(s, confirmacao):
     msg = confirmacao.SerializeToString()
     tamanho_mensagem = len(msg).to_bytes(4, 'big')
     s.send(tamanho_mensagem)
-    print("\nEnviado tamanho_mensagem", tamanho_mensagem)
+#    print("\nEnviado tamanho_mensagem", tamanho_mensagem)
     s.send(msg)
-    print("\nEnviado msg", msg)
+    print("\nEnviado msg de tamanho", len(msg))
 
 
 def receber_pedido(s):
     tamanho_mensagem_bytes = s.recv(4)
-    print("\nRecebido tamanho_mensagem", tamanho_mensagem_bytes)
+#    print("\nRecebido tamanho_mensagem", tamanho_mensagem_bytes)
     tamanho_mensagem = (tamanho_mensagem_bytes[0] << 24) + (tamanho_mensagem_bytes[1] << 16) + (tamanho_mensagem_bytes[2] << 8) + tamanho_mensagem_bytes[3]
     pedido = mflix_pb2.Pedido()
     pedido_empacotado = s.recv(tamanho_mensagem)
+    print("\nRecebido msg de tamanho", tamanho_mensagem)
     pedido.ParseFromString(pedido_empacotado)
     return pedido
 
 
 def handle_client(conn, addr):
+    print(f"Conexão com {addr} estabelecida.")
     connection = 1
     while connection:
         
@@ -81,7 +83,7 @@ def handle_client(conn, addr):
             elif not pedido.filme.titulo:
                 confirmacao.erro = 2  # Campo Título vazio
                 confirmacao.resultado = 0
-            elif not pedido.filme.diretor:
+            elif not pedido.filme.diretores:
                 confirmacao.erro = 3  # Campo Diretor vazio
                 confirmacao.resultado = 0
             elif not pedido.filme.ano:
@@ -103,6 +105,7 @@ def handle_client(conn, addr):
                     confirmacao.resultado = 0
                     confirmacao.erro = 8  # Erro ao criar o filme
                 else:
+                    confirmacao.filme.CopyFrom(pedido.filme)
                     confirmacao.resultado = 1
             
 
@@ -112,7 +115,7 @@ def handle_client(conn, addr):
                 confirmacao.erro = 1  # Campo ID vazio
                 confirmacao.resultado = 0
             else:
-                filme_lido = banco_de_dados.read()
+                filme_lido = banco_de_dados.read(pedido.filme)
                 if filme_lido is None:
                     confirmacao.resultado = 0
                     confirmacao.erro = 9  # Erro ao ler o filme 
@@ -128,22 +131,30 @@ def handle_client(conn, addr):
             elif not pedido.filme.titulo:
                 confirmacao.erro = 2  # Campo Título vazio
                 confirmacao.resultado = 0
-            elif not pedido.filme.diretor:
+            elif not pedido.filme.diretores or any(diretor == "" for diretor in pedido.filme.diretores):
                 confirmacao.erro = 3  # Campo Diretor vazio
                 confirmacao.resultado = 0
             elif not pedido.filme.ano:
                 confirmacao.erro = 4  # Campo Ano vazio
                 confirmacao.resultado = 0
-            elif not pedido.filme.generos:
+            elif not pedido.filme.generos or any(genero == "" for genero in pedido.filme.generos):
                 confirmacao.erro = 5  # Campo Gêneros vazio
                 confirmacao.resultado = 0
-            elif not pedido.filme.atores:
+            elif not pedido.filme.atores or any(ator == "" for ator in pedido.filme.atores):
                 confirmacao.erro = 6  # Campo Atores vazio
                 confirmacao.resultado = 0
             elif not pedido.filme.duracao:
                 confirmacao.erro = 7  # Campo Duração vazio
                 confirmacao.resultado = 0
-
+            elif any(diretor == "" for diretor in pedido.filme.diretores):
+                confirmacao.erro = 12  # Campo Diretor vazio
+                confirmacao.resultado = 0
+            elif any(genero == "" for genero in pedido.filme.generos):
+                confirmacao.erro = 13  # Campo Gêneros vazio
+                confirmacao.resultado = 0
+            elif any(ator == "" for ator in pedido.filme.atores):
+                confirmacao.erro = 14  # Campo Atores vazio
+                confirmacao.resultado = 0
             else:
                 resultado = banco_de_dados.update(pedido.filme)
                 if resultado == False:
@@ -164,12 +175,14 @@ def handle_client(conn, addr):
                     confirmacao.resultado = 0
                     confirmacao.erro = 11  # Erro ao deletar o filme
                 else:
+                    confirmacao.filme.CopyFrom(pedido.filme)
                     confirmacao.resultado = 4
 
   
         elif pedido.op == 5: #DESCONECT
             confirmacao.resultado = 5
             connection = 0
+            print(f"Conexão com {addr} encerrada.")
 
 
         envia_confirmacao(conn, confirmacao)
@@ -180,8 +193,10 @@ def handle_client(conn, addr):
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
 
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind((HOST, PORT))
     server.listen()
+    print(f"Servidor ouvindo em {HOST}:{PORT}")
 
     while True:
         conn, addr = server.accept()

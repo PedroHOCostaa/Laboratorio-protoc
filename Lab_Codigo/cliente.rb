@@ -26,7 +26,7 @@ require_relative 'mflix_pb'
 
 
 HOST = '127.0.0.1'
-PORT = 65433
+PORT = 65432
 
 socket = TCPSocket.new(HOST, PORT)
 
@@ -191,13 +191,13 @@ loop do
     when 2
       puts "Campo titulo vazio"
     when 3
-      puts "Campo diretores vazio"
+      puts "Lista de diretores vazia"
     when 4
       puts "Campo ano vazio"
     when 5
-      puts "Campo atores vazio"
+      puts "Lista de generos vazia"
     when 6
-      puts "Campo generos vazio"
+      puts "Lista de atores vazia"
     when 7
       puts "Campo duracao vazio"
     when 8
@@ -208,6 +208,12 @@ loop do
       puts "Erro ao atualizar filme"
     when 11
       puts "Erro ao remover filme"
+    when 12
+      puts "Campo de diretores vazio"
+    when 13
+      puts "Campo de generos vazio"
+    when 14
+      puts "Campo de atores vazio"
     end
   end
 end
