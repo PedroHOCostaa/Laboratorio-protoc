@@ -13,6 +13,10 @@ message Filme {
   int32 duracao = 7;             // Duração do filme em segundos 
 }
 
+message Filmes {
+  repeated Filme filmes = 1;
+}
+
 message Pedido {
   int32 op = 1;
   Filme filme = 2;

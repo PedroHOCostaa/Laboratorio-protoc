@@ -1,5 +1,5 @@
 require 'socket'
-require_relative 'mflix_pb'
+require_relative 'mflix_pb' 
 
 # Codigo do cliente da atividade de protobuffer, este codigo utiliza mflix_pb.rb para utilizar metodos de marshling e unmarshling que sejam compativeis
 # em direfentes linguagens, este cliente foi desenvolvido em ruby e o servidor foi desenvolvido em python, ambos utilizando o protobuffer na comunicação.
@@ -23,8 +23,6 @@ require_relative 'mflix_pb'
 # ================================================================= #
 # string da confirmação serializada (tamanho enviado anteriormente) #
 # ================================================================= #
-
-
 HOST = '127.0.0.1'
 PORT = 65432
 
@@ -33,19 +31,12 @@ socket = TCPSocket.new(HOST, PORT)
 loop do
   pedido = Mflix::Pedido.new
   pedido.filme = Mflix::Filme.new
-  puts "Digite a opção\n Create - 1\t Read - 2\n Update - 3\t Remove - 4\n Quit - 5: "
+  puts "Digite a opção\n Create - 1\t Read - 2\n Update - 3\t Remove - 4\n Quit - 5:  Buscar por atores - 6"
   pedido.op = gets.chomp.to_i
-  
-  
-  # ============================================================= #
-  #               salva os dados em pedido.filme                  #
-  # ============================================================= #
-  
 
-  case pedido.op                                      # ====== #
-  when 1                                              # Create #                  
-    puts "Digite o id do filme que será criado: "     # ====== #
-    pedido.filme.id = gets.chomp
+  case pedido.op
+  when 1  # Create
+    pedido.filme.id = ""  # Envia um ID vazio para o servidor
     puts "Digite o titulo do filme: "
     pedido.filme.titulo = gets.chomp
     puts "Quantidade de diretores"
@@ -53,79 +44,94 @@ loop do
     qtd_diretores.times do
       puts "Digite o nome do diretor: "
       diretor = gets.chomp
-      pedido.filme.diretores.push(diretor)        # Adiciona o nome do diretor no array de diretores do filme
+      pedido.filme.diretores.push(diretor)
     end
     puts "Digite o ano de lançamento do filme: "
-    pedido.filme.ano = gets.chomp.to_i    
-    puts "Quantidade de atores do filme: "
-      qtd_atores = gets.chomp.to_i
-      qtd_atores.times do
-        puts "Digite o ator do filme: "
-        ator = gets.chomp
-        pedido.filme.atores.push(ator)            # Adiciona o nome do gênero ao array de gêneros do filme
-      end
-      
-      puts "Quantidade de generos do filme: "
-      qtd_generos = gets.chomp.to_i
-      qtd_generos.times do
-        puts "Digite o genero do filme: "
-        genero = gets.chomp
-        pedido.filme.generos.push(genero)         # Adiciona o nome do gênero ao array de gêneros do filme
-      end
-      puts "Digite a duração do filme: "
-      pedido.filme.duracao = gets.chomp.to_i
-  
-                                                  # ==== #
-  when 2                                          # Read #
-    puts "Digite o id do filme que será lido: "   # ==== #
-    pedido.filme.id = gets.chomp
-
-                                                          # ====== #
-  when 3                                                  # Update #                  
-    puts "Digite o id do filme que será atualizado: "     # ====== #
-    pedido.filme.id = gets.chomp
-    puts "Digite o titulo do filme: "
-    pedido.filme.titulo = gets.chomp
-
-    puts "Quantidade de diretores"
-    qtd_diretores = gets.chomp.to_i
-    qtd_diretores.times do
-      puts "Digite o nome do diretor: "
-      diretor = gets.chomp
-      pedido.filme.diretores.push(diretor)        # Adiciona o nome do diretor no array de diretores do filme
-    end
-
-    puts "Digite o ano de lançamento do filme: "
-    pedido.filme.ano = gets.chomp.to_i    
-
+    pedido.filme.ano = gets.chomp.to_i
     puts "Quantidade de atores do filme: "
     qtd_atores = gets.chomp.to_i
     qtd_atores.times do
       puts "Digite o ator do filme: "
       ator = gets.chomp
-      pedido.filme.atores.push(ator)  # Adiciona o nome do gênero ao array de gêneros do pedido
+      pedido.filme.atores.push(ator)
     end
-
     puts "Quantidade de generos do filme: "
     qtd_generos = gets.chomp.to_i
     qtd_generos.times do
       puts "Digite o genero do filme: "
       genero = gets.chomp
-      pedido.filme.generos.push(genero)  # Adiciona o nome do gênero ao array de gêneros do pedido
+      pedido.filme.generos.push(genero)
     end
-
     puts "Digite a duração do filme: "
     pedido.filme.duracao = gets.chomp.to_i
 
+  when 2  # Read
+    puts "Digite o id do filme que será lido: "
+    pedido.filme.id = gets.chomp
 
-                                                        # ====== #
-  when 4                                                # Remove #    
-    puts "Digite o id do filme a ser deletado: "        # ====== #
+  when 3  # Update
+    pedido.filme = Mflix::Filme.new  # Inicializa o objeto Filme
+
+    # Solicita o ID do filme que será atualizado
+    puts "Digite o id do filme que será atualizado: "
     pedido.filme.id = gets.chomp
   
-                                                        # ===== #
-  when 5                                                # Close #
-    puts "Enviar mensagem para terminar conexão"        # ===== #
+    # Solicita o título do filme
+    puts "Digite o titulo do filme: "
+    pedido.filme.titulo = gets.chomp
+  
+    # Solicita a quantidade de diretores e seus nomes
+    puts "Quantidade de diretores: "
+    qtd_diretores = gets.chomp.to_i
+    pedido.filme.diretores.clear  # Limpa a lista antes de adicionar novos diretores
+    qtd_diretores.times do
+      puts "Digite o nome do diretor: "
+      diretor = gets.chomp
+      pedido.filme.diretores.push(diretor)
+    end
+  
+    # Solicita o ano de lançamento do filme
+    puts "Digite o ano de lançamento do filme: "
+    pedido.filme.ano = gets.chomp.to_i
+  
+    # Solicita a quantidade de atores e seus nomes
+    puts "Quantidade de atores do filme: "
+    qtd_atores = gets.chomp.to_i
+    pedido.filme.atores.clear  # Limpa a lista antes de adicionar novos atores
+    qtd_atores.times do
+      puts "Digite o ator do filme: "
+      ator = gets.chomp
+      pedido.filme.atores.push(ator)
+    end
+  
+    # Solicita a quantidade de gêneros e seus nomes
+    puts "Quantidade de gêneros do filme: "
+    qtd_generos = gets.chomp.to_i
+    pedido.filme.generos.clear  # Limpa a lista antes de adicionar novos gêneros
+    qtd_generos.times do
+      puts "Digite o gênero do filme: "
+      genero = gets.chomp
+      pedido.filme.generos.push(genero)
+    end
+  
+    # Solicita a duração do filme
+    puts "Digite a duração do filme (em minutos): "
+    pedido.filme.duracao = gets.chomp.to_i
+    
+  when 4  # Remove
+    puts "Digite o id do filme a ser deletado: "
+    pedido.filme.id = gets.chomp
+
+  when 5  # Close
+    puts "Enviar mensagem para terminar conexão"
+    break
+
+  when 6 # Buscar por atores
+    pedido.filme.id = ""  # Garantir que o ID está vazio para busca por atores
+    pedido.filme.atores.clear  # Limpar a lista de atores antes de adicionar o ator
+    puts "Digite o nome do ator: "
+    ator = gets.chomp 
+    pedido.filme.atores.push(ator)
 
   else
     puts "Opção inválida"
@@ -133,59 +139,63 @@ loop do
     next
   end
 
-                  # ============================================================= #
-                  #           envia mensagem do cliente para o servidor           #
-                  # ============================================================= #
-
+  # Enviar o pedido ao servidor
   msg = pedido.to_proto
   socket.write([msg.bytesize].pack('L>'))
-  print "enviado #{msg.length} com 4 bytes\n"
   socket.write(msg)
-  print "enviado #{msg.unpack1('H*')} com #{msg.length}bytes\n"
 
-
+  # Receber a resposta do servidor
   tamanhoResposta = socket.read(4).unpack1('L>')
-  msg = socket.read(tamanhoResposta)
-  confirmacao = Mflix::Confirmacao.decode(msg)
-    
+  resposta = socket.read(tamanhoResposta)
+  confirmacao = Mflix::Confirmacao.decode(resposta)
 
   case confirmacao.resultado
   when 1
     puts "Filme criado com sucesso!"
     puts "ID: #{confirmacao.filme.id}"
     puts "Título: #{confirmacao.filme.titulo}"
-    puts "Diretores: #{confirmacao.filme.diretores}"
-    puts "Atores: #{confirmacao.filme.atores}"
-    puts "Gêneros: #{confirmacao.filme.generos}"
+    puts "Diretores: #{confirmacao.filme.diretores.join(', ')}"
+    puts "Atores: #{confirmacao.filme.atores.join(', ')}"
+    puts "Gêneros: #{confirmacao.filme.generos.join(', ')}"
     puts "Duração: #{confirmacao.filme.duracao}"
     puts "Ano: #{confirmacao.filme.ano}"
   when 2
     puts "Filme lido com sucesso!"
     puts "ID: #{confirmacao.filme.id}"
     puts "Título: #{confirmacao.filme.titulo}"
-    puts "Diretores: #{confirmacao.filme.diretores}"
-    puts "Atores: #{confirmacao.filme.atores}"
-    puts "Gêneros: #{confirmacao.filme.generos}"
-    puts "Duração: #{confirmacao.filme.duracao}"
+    puts "Diretores: #{confirmacao.filme.diretores.join(', ')}"
+    puts "Atores: #{confirmacao.filme.atores.join(', ')}"
+    puts "Gêneros: #{confirmacao.filme.generos.join(', ')}"
+    puts "Duração: #{confirmacao.filme.duracao} minutos"
     puts "Ano: #{confirmacao.filme.ano}"
   when 3
     puts "Filme atualizado com sucesso!"
-    puts "ID: #{confirmacao.filme.id}"
-    puts "Título: #{confirmacao.filme.titulo}"
-    puts "Diretores: #{confirmacao.filme.diretores}"
-    puts "Atores: #{confirmacao.filme.atores}"
-    puts "Gêneros: #{confirmacao.filme.generos}"
-    puts "Duração: #{confirmacao.filme.duracao}"
-    puts "Ano: #{confirmacao.filme.ano}"
   when 4
     puts "Filme removido com sucesso!"
     puts "ID: #{confirmacao.filme.id}"
   when 5
     puts "Conexão encerrada."
     break
+  when 6
+    # Processar a resposta quando a busca por atores retornar uma lista de filmes
+    filmes = Mflix::Filmes.decode(resposta)
+    if filmes.filmes.empty?
+      puts "Nenhum filme encontrado."
+    else
+      filmes.filmes.each do |filme|
+        puts "Filme encontrado:"
+        puts "ID: #{filme.id}"
+        puts "Título: #{filme.titulo}"
+        puts "Diretores: #{filme.diretores.join(', ')}"
+        puts "Atores: #{filme.atores.join(', ')}"
+        puts "Gêneros: #{filme.generos.join(', ')}"
+        puts "Duração: #{filme.duracao} minutos"
+        puts "Ano: #{filme.ano}"
+        puts "-" * 20
+      end
+    end
   else
     case confirmacao.erro
-    
     when 1
       puts "Campo id vazio"
     when 2

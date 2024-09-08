@@ -1,4 +1,3 @@
-# Certifique-se de que o arquivo Ruby gerado está no diretório correto
 require_relative 'pessoa_pb'
 
 # Cria uma nova instância da mensagem Pessoa
