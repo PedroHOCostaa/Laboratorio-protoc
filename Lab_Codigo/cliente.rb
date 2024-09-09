@@ -14,15 +14,15 @@ require 'socket'
 require_relative 'mflix_pb' 
 
     # Cliente envia para o servidor #
-# ========================================================== #
-# tamanho da string serializada do pedido em bytes (4 bytes) #
+# ============================================================= #
+# tamanho da string serializada do pedido em bytes (4 bytes)    #
 # ============================================================= #
 # string do pedido serializado (tamanho enviado anteriormente)  #
 # ============================================================= #
 
     # Cliente recebe do servidor #
-# =============================================================== #
-# tamanho da string serializada da confirmação em bytes (4 bytes) #
+# ================================================================= #
+# tamanho da string serializada da confirmação em bytes (4 bytes)   #
 # ================================================================= #
 # string da confirmação serializada (tamanho enviado anteriormente) #
 # ================================================================= #
@@ -34,7 +34,7 @@ socket = TCPSocket.new(HOST, PORT)
 loop do
   pedido = Mflix::Pedido.new
   pedido.filme = Mflix::Filme.new
-  puts "Digite a opção\n Create - 1\t Read - 2\n Update - 3\t Remove - 4\n Quit - 5:  Buscar por atores - 6"
+  puts "Digite a opção\n Create - 1\t Read - 2\n Update - 3\t Remove - 4\n Quit - 5:  Buscar por atores - 6\n Buscar por generos - 7"
   pedido.op = gets.chomp.to_i
 
   case pedido.op
@@ -135,7 +135,13 @@ loop do
     puts "Digite o nome do ator: "
     ator = gets.chomp 
     pedido.filme.atores.push(ator)
-
+    
+  when 7 # Buscar por generos
+    pedido.filme.id = ""  # Garantir que o ID está vazio para busca por generos
+    pedido.filme.generos.clear  # Limpar a lista de generos antes de adicionar o genero
+    puts "Digite o nome do genero: "
+    genero = gets.chomp
+    pedido.filme.generos.push(genero)
   else
     puts "Opção inválida"
     pedido.op = 0
@@ -181,6 +187,18 @@ loop do
     break
   when 6
     confirmacao.filmes.each do |filme|
+        puts "Filme encontrado:"
+        puts "ID: #{filme.id}"
+        puts "Título: #{filme.titulo}"
+        puts "Diretores: #{filme.diretores.join(', ')}"
+        puts "Atores: #{filme.atores.join(', ')}"
+        puts "Gêneros: #{filme.generos.join(', ')}"
+        puts "Duração: #{filme.duracao} minutos"
+        puts "Ano: #{filme.ano}"
+        puts "-" * 20
+      end
+    when 7
+      confirmacao.filmes.each do |filme|
         puts "Filme encontrado:"
         puts "ID: #{filme.id}"
         puts "Título: #{filme.titulo}"

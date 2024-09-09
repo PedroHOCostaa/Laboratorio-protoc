@@ -177,12 +177,40 @@ class Banco:
                 filme_lido = mflix_pb2.Filme()
                 filme_lido.id = str(mongo_filme["_id"])
                 filme_lido.titulo = mongo_filme.get("title", "")
-                filme_lido.diretores.extend(mongo_filme.get("directors", []))
-                filme_lido.ano = mongo_filme.get("year", 0)
-                filme_lido.atores.extend(mongo_filme.get("cast", []))
-                filme_lido.generos.extend(mongo_filme.get("genres", []))
-                filme_lido.duracao = mongo_filme.get("runtime", 0)
-                
+
+                diretores = mongo_filme.get("directors", [])
+                if isinstance(diretores, list):
+                    filme_lido.diretores.extend(diretores)
+                else:
+                    print(f"Tipo inesperado para diretores: {type(diretores)}")
+
+                # Validação e conversão de ano
+                ano = mongo_filme.get("year", 0)
+                try:
+                    filme_lido.ano = int(ano)
+                except ValueError:
+                    print(f"Valor de ano inválido: {ano}")
+                    filme_lido.ano = 0
+
+                atores = mongo_filme.get("cast", [])
+                if isinstance(atores, list):
+                    filme_lido.atores.extend(atores)
+                else:
+                    print(f"Tipo inesperado para atores: {type(atores)}")
+
+                generos = mongo_filme.get("genres", [])
+                if isinstance(generos, list):
+                    filme_lido.generos.extend(generos)
+                else:
+                    print(f"Tipo inesperado para generos: {type(generos)}")
+
+                duracao = mongo_filme.get("runtime", 0)
+                try:
+                    filme_lido.duracao = int(duracao)
+                except ValueError:
+                    print(f"Valor de duração inválido: {duracao}")
+                    filme_lido.duracao = 0
+
                 filmes_lidos.filmes.append(filme_lido)
             
             if not filmes_lidos.filmes:
@@ -192,7 +220,64 @@ class Banco:
         except Exception as e:
             print(f"Erro ao ler filmes: {e}")
             return None 
-    
+
+    # Método para ler filmes do banco de dados por gênero
+    def read_by_genre(self, filme):
+        print("Lendo o filme com genero:", filme.generos)
+
+        try:
+            genero = list(filme.generos)
+            mongo_filmes = self.collection.find({"genres": {"$in": genero}})
+
+            filmes_lidos = mflix_pb2.Filmes()
+            for mongo_filme in mongo_filmes:
+                filme_lido = mflix_pb2.Filme()
+                filme_lido.id = str(mongo_filme["_id"])
+                filme_lido.titulo = mongo_filme.get("title", "")
+
+                diretores = mongo_filme.get("directors", [])
+                if isinstance(diretores, list):
+                    filme_lido.diretores.extend(diretores)
+                else:
+                    print(f"Tipo inesperado para diretores: {type(diretores)}")
+
+                # Validação e conversão de ano
+                ano = mongo_filme.get("year", 0)
+                try:
+                    filme_lido.ano = int(ano)
+                except ValueError:
+                    print(f"Valor de ano inválido: {ano}")
+                    filme_lido.ano = 0
+
+                atores = mongo_filme.get("cast", [])
+                if isinstance(atores, list):
+                    filme_lido.atores.extend(atores)
+                else:
+                    print(f"Tipo inesperado para atores: {type(atores)}")
+
+                generos = mongo_filme.get("genres", [])
+                if isinstance(generos, list):
+                    filme_lido.generos.extend(generos)
+                else:
+                    print(f"Tipo inesperado para generos: {type(generos)}")
+
+                duracao = mongo_filme.get("runtime", 0)
+                try:
+                    filme_lido.duracao = int(duracao)
+                except ValueError:
+                    print(f"Valor de duração inválido: {duracao}")
+                    filme_lido.duracao = 0
+
+                filmes_lidos.filmes.append(filme_lido)
+            
+            if not filmes_lidos.filmes:
+                print("Nenhum filme encontrado")
+                return None
+            return filmes_lidos
+        except Exception as e:
+            print(f"Erro ao ler filmes: {e}")
+            return None
+
 # Função para enviar o filme ao cliente
 def envia_filme(s ,filme):
     msg = filme.SerializeToString()
@@ -349,6 +434,21 @@ def handle_client(conn, addr):
                 confirmacao.resultado = 0
             else:
                 filmes_lidos = banco_de_dados.read_by_actors(pedido.filme)
+                print(filmes_lidos)
+                if filmes_lidos is None:
+                    confirmacao.resultado = 0
+                    confirmacao.erro = 9  # Erro ao ler o filme 
+                else:
+                    confirmacao.resultado = 6
+                    # Adiciona todos os filmes lidos ao campo `filmes`
+                    confirmacao.filmes.extend(filmes_lidos.filmes)
+        
+        elif pedido.op == 7:  # Read por generos
+            if not pedido.filme.generos:
+                confirmacao.erro = 1  # Campo genero vazio
+                confirmacao.resultado = 0
+            else:
+                filmes_lidos = banco_de_dados.read_by_genre(pedido.filme)
                 print(filmes_lidos)
                 if filmes_lidos is None:
                     confirmacao.resultado = 0

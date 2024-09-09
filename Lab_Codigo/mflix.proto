@@ -10,7 +10,7 @@ message Filme {
   int32 ano = 4;                 // Ano de lançamento
   repeated string atores = 5;    // Lista de atores
   repeated string generos = 6;   // Gênero do filme
-  int32 duracao = 7;             // Duração do filme em segundos 
+  int32 duracao = 7;             // Duração do filme em minutos 
 }
 
 message Filmes {
