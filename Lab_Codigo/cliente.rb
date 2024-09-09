@@ -1,14 +1,17 @@
+# Autores: Marcos Bezner Rampaso e Pedro Henrique de Oliveira Costa
+# Data: 08/09/2024
+
+# Descrição:
+#           Codigo do cliente da atividade de protobuffer, este codigo utiliza mflix_pb.rb para utilizar metodos de marshling e unmarshling que sejam compativeis
+#           em direfentes linguagens, este cliente foi desenvolvido em ruby e o servidor foi desenvolvido em python, ambos utilizando o protobuffer na comunicação.
+#           O codigo envia uma mensagem pedido serializado para o servidor e então espera receber uma mensagem confirmacao serializada do servidor.
+#           Estas mensagem são sobre dados de um banco de dados com a amostra mflix que é abordada no codigo do servidor. Este cliente faz pedido do CRUD para
+#           o servidor.
+#           Tanto na estrutura pedido quanto na confirmacao possuimos o campo filme, que é utilizado para enviar dados tanto para o servidor quanto para o cliente.
+#           A comunicação realizada por sockets tcp ocorre da seguinte forma: 
+
 require 'socket'
 require_relative 'mflix_pb' 
-
-# Codigo do cliente da atividade de protobuffer, este codigo utiliza mflix_pb.rb para utilizar metodos de marshling e unmarshling que sejam compativeis
-# em direfentes linguagens, este cliente foi desenvolvido em ruby e o servidor foi desenvolvido em python, ambos utilizando o protobuffer na comunicação.
-# O codigo envia uma mensagem pedido serializado para o servidor e então espera receber uma mensagem confirmacao serializada do servidor.
-# Estas mensagem são sobre dados de um banco de dados com a amostra mflix que é abordada no codigo do servidor. Este cliente faz pedido do CRUD para
-# o servidor.
-# Tanto na estrutura pedido quanto na confirmacao possuimos o campo filme, que é utilizado para enviar dados tanto para o servidor quanto para o cliente.
-# A comunicação realizada por sockets tcp ocorre da seguinte forma: 
-
 
     # Cliente envia para o servidor #
 # ========================================================== #
@@ -177,12 +180,7 @@ loop do
     puts "Conexão encerrada."
     break
   when 6
-    # Processar a resposta quando a busca por atores retornar uma lista de filmes
-    filmes = Mflix::Filmes.decode(resposta)
-    if filmes.filmes.empty?
-      puts "Nenhum filme encontrado."
-    else
-      filmes.filmes.each do |filme|
+    confirmacao.filmes.each do |filme|
         puts "Filme encontrado:"
         puts "ID: #{filme.id}"
         puts "Título: #{filme.titulo}"
@@ -193,7 +191,6 @@ loop do
         puts "Ano: #{filme.ano}"
         puts "-" * 20
       end
-    end
   else
     case confirmacao.erro
     when 1

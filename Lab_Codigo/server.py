@@ -1,3 +1,9 @@
+# Autores: Marcos Bezner Rampaso e Pedro Henrique de Oliveira Costa
+# Data: 08/09/2024
+# Descrição: Servidor que recebe requisições de um cliente e executa operações CRUD em um banco de dados MongoDB.
+# O servidor é capaz de criar, ler, atualizar e deletar filmes, além de realizar uma busca por atores e generos.
+# O servidor é capaz de lidar com múltiplos clientes simultaneamente.
+
 import socket
 import threading
 import mflix_pb2
@@ -9,18 +15,12 @@ from pymongo.server_api import ServerApi
 HOST = '127.0.0.1'
 PORT =  65432
 
-import uuid
-
-def generate_random_id():
-    # Gera um UUID4 (aleatório)
-    random_uuid = uuid.uuid4()
-    # Converte o UUID para bytes e usa os primeiros 12 bytes
-    return random_uuid.bytes[:12]
-
+# Classe que representa o banco de dados MongoDB
 class Banco:
     def __init__(self, db):
             self.collection = db['movies']  # Coleção de filmes no MongoDB
 
+    # Método para criar um filme no banco de dados
     def create(self, filme):
         print("Criando o Filme:", filme.titulo)
         
@@ -47,14 +47,14 @@ class Banco:
         # Cria o documento do filme para inserção, sem o campo '_id' para que seja gerado automaticamente
         filme_documento = {
             "title": filme.titulo,
-            "directors": list(filme.diretores),  # Converter para lista, caso seja necessário
+            "directors": list(filme.diretores),  # Converter para lista
             "year": filme.ano,
             "cast": list(filme.atores),  # Converter para lista
             "genres": list(filme.generos),  # Converter para lista
             "runtime": filme.duracao
         }
 
-        # Insere o filme na coleção
+        # Insere o filme na coleção do MongoDB
         try:
             result = self.collection.insert_one(filme_documento)  # O MongoDB gera o ID automaticamente
             print("Filme criado com sucesso!")
@@ -68,12 +68,13 @@ class Banco:
                 "generos": filme.generos,
                 "duracao": filme.duracao
             }
-            return True, filme_criado
+            return True, filme_criado # Retorna o filme criado
         
         except Exception as e:
             print(f"Erro ao criar filme: {e}")
             return False, None        
-        
+    
+    # Método para ler um filme do banco de dados
     def read(self, filme):
         print("Lendo o filme com ID:", filme.id)
 
@@ -106,6 +107,7 @@ class Banco:
             print(f"Erro ao ler filme: {e}")
             return None
         
+    # Método para atualizar um filme no banco de dados
     def update(self, filme):
         print("Atualizando o filme com ID:", filme.id, "Para", filme.titulo)
         
@@ -139,7 +141,8 @@ class Banco:
         else:
             print("Erro ao atualizar o filme")
             return False                
-        
+    
+    # Método para deletar um filme do banco de dados
     def delete(self, filme):
         try:
             # Converte o ID para ObjectId
@@ -159,23 +162,20 @@ class Banco:
             print(f"Erro ao deletar filme: {e}")
             return False
     
+    # Método para ler filmes do banco de dados por atores
     def read_by_actors(self, filme):
         print("Lendo o filme com atores:", filme.atores)
 
         try:
-            # Converte a lista de atores em uma lista de strings para uso na consulta
             atores = list(filme.atores)
-
-            # Busca filmes no MongoDB pelos atores
             mongo_filmes = self.collection.find({"cast": {"$in": atores}})
-            
-            filmes_lidos = []
+            num_filmes = self.collection.count_documents({"cast": {"$in": atores}})
+            print("Filmes encontrados:", num_filmes)
+
+            filmes_lidos = mflix_pb2.Filmes()
             for mongo_filme in mongo_filmes:
-                # Cria um novo objeto Filme do Protocol Buffer
                 filme_lido = mflix_pb2.Filme()
-                
-                # Popula o objeto com os dados retornados do MongoDB
-                filme_lido.id = str(mongo_filme["_id"])  # O ID no MongoDB é um ObjectId
+                filme_lido.id = str(mongo_filme["_id"])
                 filme_lido.titulo = mongo_filme.get("title", "")
                 filme_lido.diretores.extend(mongo_filme.get("directors", []))
                 filme_lido.ano = mongo_filme.get("year", 0)
@@ -183,20 +183,17 @@ class Banco:
                 filme_lido.generos.extend(mongo_filme.get("genres", []))
                 filme_lido.duracao = mongo_filme.get("runtime", 0)
                 
-                filmes_lidos.append(filme_lido)
+                filmes_lidos.filmes.append(filme_lido)
             
-            if not filmes_lidos:
+            if not filmes_lidos.filmes:
                 print("Nenhum filme encontrado")
                 return None
-            
-            # Cria uma mensagem de resposta com a lista de filmes
-            resposta = mflix_pb2.Filme()
-            resposta.filmes.extend(filmes_lidos)
-            return resposta
+            return filmes_lidos
         except Exception as e:
             print(f"Erro ao ler filmes: {e}")
-            return None
-                    
+            return None 
+    
+# Função para enviar o filme ao cliente
 def envia_filme(s ,filme):
     msg = filme.SerializeToString()
     tamanho_mensagem = len(msg).to_bytes(4, 'big')
@@ -205,6 +202,7 @@ def envia_filme(s ,filme):
     s.send(msg)
     print("\nEnviado msg", msg)
 
+# Função para enviar a confirmação ao cliente
 def envia_confirmacao(s, confirmacao):
     msg = confirmacao.SerializeToString()
     tamanho_mensagem = len(msg).to_bytes(4, 'big')
@@ -213,7 +211,7 @@ def envia_confirmacao(s, confirmacao):
     s.send(msg)
     print("\nEnviado msg de tamanho", len(msg))
 
-
+# Função para receber o pedido do cliente
 def receber_pedido(s):
     tamanho_mensagem_bytes = s.recv(4)
 #    print("\nRecebido tamanho_mensagem", tamanho_mensagem_bytes)
@@ -224,7 +222,7 @@ def receber_pedido(s):
     pedido.ParseFromString(pedido_empacotado)
     return pedido
 
-
+# Função para lidar com um cliente
 def handle_client(conn, addr):
     print(f"Conexão com {addr} estabelecida.")
     connection = 1
@@ -232,8 +230,9 @@ def handle_client(conn, addr):
         
         pedido = receber_pedido(conn)
         
-        confirmacao = mflix_pb2.Confirmacao()
-        
+        confirmacao = mflix_pb2.Confirmacao() # Cria a mensagem de confirmação
+
+        # Verifica a operação solicitada pelo cliente
         if pedido.op == 1:  # CREATE
             if not pedido.filme.titulo:
                 confirmacao.erro = 2  # Campo Título vazio
@@ -344,27 +343,26 @@ def handle_client(conn, addr):
             connection = 0
             print(f"Conexão com {addr} encerrada.")
         
-        elif pedido.op == 6: # Read por atores
+        elif pedido.op == 6:  # Read por atores
             if not pedido.filme.atores:
                 confirmacao.erro = 1  # Campo Atores vazio
                 confirmacao.resultado = 0
             else:
-                filme_lido = banco_de_dados.read_by_actors(pedido.filme)
-                if filme_lido is None:
+                filmes_lidos = banco_de_dados.read_by_actors(pedido.filme)
+                print(filmes_lidos)
+                if filmes_lidos is None:
                     confirmacao.resultado = 0
                     confirmacao.erro = 9  # Erro ao ler o filme 
-                else:   
-                    confirmacao.filme.CopyFrom(filme_lido)
-                    confirmacao.resultado = 2            
-
+                else:
+                    confirmacao.resultado = 6
+                    # Adiciona todos os filmes lidos ao campo `filmes`
+                    confirmacao.filmes.extend(filmes_lidos.filmes)
 
 
         envia_confirmacao(conn, confirmacao)
 
 
-
-
-
+# Inicializa o servidor TCP
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
     # Cria a conexão com o MongoDB
     uri = "mongodb+srv://admin:admin@mflix-db.e3wrt.mongodb.net/?retryWrites=true&w=majority&appName=mflix-db"
@@ -372,8 +370,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
 
     # Verifica se a conexão foi estabelecida
     try:
-        client.admin.command('ping')
-        print("Conexão com o servidor Mongo Estabelecida!")
+        client.admin.command('ping') # Testa a conexão
+        print("Conexão com o servidor Mongo Estabelecida!") # Conexão estabelecida
     except Exception as e:
         print(e)
 

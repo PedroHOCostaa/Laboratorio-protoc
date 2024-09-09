@@ -25,6 +25,8 @@ message Pedido {
 
 message Confirmacao {
   int32 resultado = 1;
-  Filme filme = 2;
-  int32 erro = 3;
+  Filme filme = 2;               // Para quando o retorno for de um único filme
+  repeated Filme filmes = 3;      // Para quando o retorno for de múltiplos filmes
+  int32 erro = 4;
 }
+
